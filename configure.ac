@@ -15,8 +15,11 @@ AM_CONDITIONAL([TARGET_PPC], [test x"$ARCH" = "xppc"])
 AC_PROG_CC
 AC_PROG_RANLIB
 
+AC_SEARCH_LIBS([dlsym], [dl])
+AC_SEARCH_LIBS([inflateEnd], [z])
+AC_SEARCH_LIBS([htab_create], [iberty])
 AC_SEARCH_LIBS([bfd_init], [bfd-multiarch bfd])
-AC_SEARCH_LIBS([disassembler], [opcodes-multiarch opcodes])
+AC_SEARCH_LIBS([disassembler], [opcodes-multiarch opcodes], [], [], [-lbfd -liberty -ldl -lz])
 AC_SEARCH_LIBS(archive_read_open_filename, archive, [AC_CHECK_HEADERS(archive.h)], [AC_MSG_ERROR([Missing libarchive library, install libarchive-dev package])])
 AC_CHECK_HEADERS([bfd.h dis-asm.h])
 AC_COMPILE_IFELSE(

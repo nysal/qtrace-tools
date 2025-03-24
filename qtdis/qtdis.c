@@ -113,10 +113,10 @@ static void build_symtab(bfd *abfd)
 	if (!(bfd_get_file_flags(abfd) & HAS_SYMS))
 		return;
 
-	nr_syms = bfd_read_minisymbols(abfd, 0, (PTR) &syms, &size);
+	nr_syms = bfd_read_minisymbols(abfd, 0, (void **) &syms, &size);
 
 	if (nr_syms == 0)
-		nr_syms = bfd_read_minisymbols(abfd, 1, (PTR) &syms, &size);
+		nr_syms = bfd_read_minisymbols(abfd, 1, (void **) &syms, &size);
 
 	symcount = nr_syms;
 
@@ -219,6 +219,19 @@ static void print_address(bfd_vma vma, struct disassemble_info *info)
 	__print_address(vma);
 }
 
+static int
+fprintf_styled (FILE *f, enum disassembler_style style,
+		const char *fmt, ...)
+{
+	int res;
+	va_list args;
+
+	va_start (args, fmt);
+	res = vfprintf (f, fmt, args);
+	va_end (args);
+
+	return res;
+}
 /*
  * The qtrace format writes the instruction in big endian format, but we
  * converted it to host endian as we read it.  Since we pass the instruction in
@@ -246,8 +259,8 @@ void disasm(unsigned long ea, uint32_t *buf, unsigned long bufsize)
 #else
 		disassembler_p = print_insn_big_powerpc;
 #endif
-
-		init_disassemble_info(&info, stdout, (fprintf_ftype)fprintf);
+		init_disassemble_info(&info, stdout, (fprintf_ftype)fprintf,
+				      (fprintf_styled_ftype)fprintf_styled);
 		info.disassembler_options = "power10";
 		info.print_address_func = print_address;
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
